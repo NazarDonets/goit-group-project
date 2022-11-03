@@ -1,7 +1,10 @@
-import { getInitialData } from './api-service';
+import { getInitialData, getGenres } from './api-service';
 import movieCardTpl from './../templates/movie-card.hbs';
 
 let currentPage;
+
+let genresList;
+
 let moviesList = document.querySelector('.movie-list');
 
 function getCurrentPage() {
@@ -17,8 +20,10 @@ function getCurrentPage() {
 
 getCurrentPage();
 
-function renderUI() {
-  getInitialData().then(data => {
+async function renderUI() {
+  genresList = await getGenres();
+
+  getInitialData(genresList).then(data => {
     console.log(data);
     moviesList.innerHTML = data.map(elem => movieCardTpl(elem)).join('');
   });

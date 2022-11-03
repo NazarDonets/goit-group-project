@@ -4,22 +4,27 @@ const API_KEY = '00196fbc08c9fb63cbb7cc63efd25ed1';
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500/';
 
-export async function getInitialData() {
+export async function getGenres() {
+  const genre = {};
+
+  const movieGenres = await getMovieGenres();
+  const tvGenres = await getTvGenres();
+
+  const allGenresArray = [...movieGenres, ...tvGenres];
+
+  allGenresArray.forEach(elem => {
+    genre[elem.id] = elem;
+  });
+
+  return genre;
+}
+
+export async function getInitialData(genresDictionary) {
   try {
     const { data } = await axios.get(`${BASE_URL}/trending/all/day`, {
       params: {
         api_key: API_KEY,
       },
-    });
-
-    const genre = {};
-    const movieGenres = await getMovieGenres();
-    const tvGenres = await getTvGenres();
-
-    const allGenresArray = [...movieGenres, ...tvGenres];
-
-    allGenresArray.forEach(elem => {
-      genre[elem.id] = elem;
     });
 
     return data.results.map(elem => {
@@ -32,7 +37,7 @@ export async function getInitialData() {
         ).getFullYear(),
         genres: elem.genre_ids
           .map(genreId => {
-            return genre[genreId]?.name;
+            return genresDictionary[genreId]?.name;
           })
           .join(', '),
       };
@@ -71,3 +76,5 @@ async function getTvGenres() {
     return err;
   }
 }
+
+console.log('echo');
