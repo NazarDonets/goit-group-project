@@ -8,28 +8,28 @@
   background-position: center;
   background-size: cover;
   @include x1 {
-    background-image: url('./../images/header-mob@1x.jpg');
+    background-image: url('./../images/header-home-mob@1x.jpg');
   }
   @include x2 {
-    background-image: url('./../images/header-mob@2x.jpg');
+    background-image: url('./../images/header-home-mob@2x.jpg');
   }
 
   @include tablet-bg {
     padding-top: 40px;
     @include x1 {
-      background-image: url('./../images/header-tablet@1x.jpg');
+      background-image: url('./../images/header-home-tablet@1x.jpg');
     }
     @include x2 {
-      background-image: url('./../images/header-tablet@2x.jpg');
+      background-image: url('./../images/header-home-tablet@2x.jpg');
     }
   }
 
   @include desktop {
     @include x1 {
-      background-image: url('./../images/header-desktop@1x.jpg');
+      background-image: url('./../images/header-home-desktop@1x.jpg');
     }
     @include x2 {
-      background-image: url('./../images/header-desktop@2x.jpg');
+      background-image: url('./../images/header-home-desktop@2x.jpg');
     }
   }
 }
