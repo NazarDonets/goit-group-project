@@ -24,7 +24,6 @@ async function renderUI() {
   genresList = await getGenres();
 
   getInitialData(genresList).then(data => {
-    console.log(data);
     moviesList.innerHTML = data.map(elem => movieCardTpl(elem)).join('');
   });
 }
