@@ -26,7 +26,7 @@ export async function fetchData(endpoint) {
         query: query,
       },
     });
-    // console.log(data);
+    console.log(data);
     return data;
   } catch (err) {
     console.error(err);
@@ -222,13 +222,14 @@ const dataModel = {
 
 async function getSearchResults(query) {
   endpoint = '/search/movie';
-  pageHeadingText.textContent = 'Search results';
   const data = await fetchData(`${endpoint}?query=${query}`);
   if (data.results.length === 0) {
+    pageHeadingText.textContent = `${data.total_results} matches found`;
     headerErrorText.textContent = `No results found matching ${query} query`;
     headerErrorText.classList.remove('visually-hidden');
   }
   if (data.results.length !== 0) {
+    pageHeadingText.textContent = `${data.total_results} matches found`;
     headerErrorText.classList.add('visually-hidden');
   }
   return data;
