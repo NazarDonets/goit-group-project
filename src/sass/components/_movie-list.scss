@@ -3,10 +3,13 @@
 
 .movie-list {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   margin-top: 30px;
+  row-gap: 20px;
 
   @include tablet-bg {
+    justify-content: flex-start;
     column-gap: 32px;
     row-gap: 32px;
   }
@@ -17,24 +20,40 @@
 }
 
 .movie-item {
-  max-width: 373px;
+  max-width: 100%;
+  height: auto;
+
+  @include tablet-bg {
+    width: 336px;
+  }
+
+  @include desktop {
+    width: calc((1216 - 32) / 3);
+  }
+}
+
+.movie-link {
+  &:hover .movie-image,
+  &:focus .movie-image {
+    box-shadow: 0px 0px 28px 3px $color-accent-orange;
+    outline: none;
+  }
 }
 
 .movie-image {
   display: block;
-  height: 402px;
   max-width: 100%;
   object-fit: cover;
   border-radius: 5px;
+  transition: box-shadow $animate-transition;
 
   @include tablet-bg {
     height: 455px;
-    max-width: 336px;
+    width: 100%;
   }
 
   @include desktop {
     height: 574px;
-    max-width: 373px;
   }
 }
 
@@ -47,6 +66,7 @@
 .movie-description {
   font-family: $main-font;
   font-size: 12px;
+  font-weight: 500;
   line-height: 1.33;
 
   @include desktop {
@@ -57,8 +77,25 @@
 .movie-title {
   color: black;
   text-transform: uppercase;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.2;
 }
 
 .movie-description {
   color: $color-accent-orange;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.js-load-more {
+  border: none;
+  background-color: $color-accent-orange;
+  color: black;
+  padding: 6px 10px;
+  display: flex;
+  margin: 40px auto 40px auto;
+  align-items: center;
+  cursor: pointer;
 }
