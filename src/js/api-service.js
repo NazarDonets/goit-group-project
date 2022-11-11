@@ -24,7 +24,7 @@ export async function fetchData(endpoint) {
         query: query,
       },
     });
-    console.log(data);
+    // console.log(data);
     return data;
   } catch (err) {
     console.error(err);
@@ -198,7 +198,7 @@ const dataModel = {
         'addedToWatched',
         JSON.stringify(this.addedToWatched)
       );
-      console.log(this.addedToWatched);
+      // console.log(this.addedToWatched);
     }
   },
   removeFromWatched(selectedMovie) {
@@ -214,7 +214,7 @@ const dataModel = {
     } else {
       return;
     }
-    console.log(this.addedToWatched);
+    // console.log(this.addedToWatched);
   },
 };
 
