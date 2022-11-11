@@ -8,6 +8,8 @@ const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 const movieListEl = document.querySelector('.movie-list');
 const searchFormEl = document.querySelector('.search-form');
 const loadMoreBtn = document.querySelector('.js-load-more');
+const headerErrorText = document.querySelector('.header-error');
+const pageHeadingText = document.querySelector('.page-heading');
 
 let genresDictionary = {};
 let page = 1;
@@ -218,9 +220,18 @@ const dataModel = {
   },
 };
 
-function getSearchResults(query) {
+async function getSearchResults(query) {
   endpoint = '/search/movie';
-  return fetchData(`${endpoint}?query=${query}`);
+  pageHeadingText.textContent = 'Search results';
+  const data = await fetchData(`${endpoint}?query=${query}`);
+  if (data.results.length === 0) {
+    headerErrorText.textContent = `No results found matching ${query} query`;
+    headerErrorText.classList.remove('visually-hidden');
+  }
+  if (data.results.length !== 0) {
+    headerErrorText.classList.add('visually-hidden');
+  }
+  return data;
 }
 
 searchFormEl.addEventListener('submit', async e => {

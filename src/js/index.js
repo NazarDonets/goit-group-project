@@ -1,8 +1,3 @@
-import {
-  fetchData,
-  formatResponseData,
-  renderUI,
-  endpoint,
-} from './api-service';
+import { fetchData, formatResponseData, renderUI } from './api-service';
 
-fetchData(endpoint).then(formatResponseData).then(renderUI);
+fetchData('/trending/all/week').then(formatResponseData).then(renderUI);
