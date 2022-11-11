@@ -12,6 +12,7 @@ const loadMoreBtn = document.querySelector('.js-load-more');
 let genresDictionary = {};
 let page = 1;
 let query;
+let modalBackdropEl;
 
 export let endpoint = '/trending/all/week';
 
