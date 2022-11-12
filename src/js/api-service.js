@@ -12,11 +12,12 @@ const headerErrorText = document.querySelector('.header-error');
 const pageHeadingText = document.querySelector('.page-heading');
 
 let genresDictionary = {};
-let page = 1;
-let searchQuery;
 let modalBackdropEl;
+let searchQuery;
+let endpoint;
+let page = 1;
 
-export let endpoint = '/trending/all/week';
+let currentPage = 'trending'; // POSSIBLE VALUES ARE "searchResults" or "trending"
 
 export async function fetchData(endpoint) {
   try {
@@ -112,7 +113,8 @@ export async function formatResponseData(data) {
       };
     }
     if (Array.isArray(formattedApiResponse)) {
-      return formattedApiResponse.filter(elem => elem !== undefined); // REMOVES ALL UNDEFINED OBJECTS FROM THE ARRAY
+      // REMOVES ALL UNDEFINED OBJECTS FROM THE ARRAY
+      return formattedApiResponse.filter(elem => elem !== undefined);
     }
     return formattedApiResponse;
   } catch (err) {
@@ -142,9 +144,12 @@ movieListEl.addEventListener('click', async e => {
 });
 
 async function renderCardDetailsModal(eventData) {
-  const media_type = eventData.composedPath().find(elem => elem.tagName === 'A') // GETTING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE, THE FIELDS IN API RESPONSE DIFFER
+  // GETTING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE, THE FIELDS IN API RESPONSE DIFFER
+  const media_type = eventData.composedPath().find(elem => elem.tagName === 'A')
     .dataset.type;
-  const clickedMovieCardId = eventData // GETTING THE ID OF A CLICKED MOVIE CARD ELEMENT ON THE MOVIE LIST
+
+  // GETTING THE ID OF A CLICKED MOVIE CARD ELEMENT ON THE MOVIE LIST
+  const clickedMovieCardId = eventData
     .composedPath()
     .find(elem => elem.tagName === 'A')
     .getAttribute('href');
@@ -179,13 +184,15 @@ async function renderCardDetailsModal(eventData) {
     ) {
       modalBackdropEl.remove();
       document.body.style.overflowY = '';
+      if ((currentPage = 'searchResults')) {
+        endpoint = '/search/multi';
+      }
+      if ((currentPage = 'trending')) endpoint = '/trending/all/week';
     }
   });
 }
 
 async function getSearchResults(searchQuery) {
-  // RETURNS RESPONSE FROM API AFTER THE SEARCH QUERY IS SUBMITTED
-  endpoint = '/search/multi';
   return await fetchData(`${endpoint}?query=${searchQuery}`);
 }
 
@@ -193,15 +200,21 @@ searchFormEl.addEventListener('submit', async e => {
   // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
   // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
   e.preventDefault();
+
+  // UPDATING THE ENDPOINT GLOBAL VARIABLE, IT IS REQUIRED FOR
+  // USING "LOAD MORE" BUTTON ON THE SEARCH RESULTS PAGE
+  endpoint = '/search/multi';
   searchQuery = searchFormEl.elements.query.value;
   if (!searchQuery) {
+    // EMPTY STRING VALIDATION
     headerErrorText.textContent = `Please enter search query`;
     headerErrorText.classList.remove('visually-hidden');
     return;
   }
-  movieListEl.innerHTML = '';
   getSearchResults(searchQuery)
     .then(data => {
+      currentPage = 'searchResults';
+      movieListEl.innerHTML = '';
       if (data.results.length === 0) {
         pageHeadingText.textContent = `${data.total_results} matches found`;
         headerErrorText.textContent = `No results found matching ${searchQuery} query`;
@@ -218,7 +231,7 @@ searchFormEl.addEventListener('submit', async e => {
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
-  searchQuery;
+  // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
   fetchData(endpoint + `?page=${page}`)
     .then(formatResponseData)
     .then(renderMoviesList);
