@@ -214,10 +214,13 @@ async function getSearchResults(searchQuery) {
 }
 
 searchFormEl.addEventListener('submit', async e => {
-  e.preventDefault();
-
   // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
   // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
+  e.preventDefault();
+
+  // UPDATING THE ENDPOINT GLOBAL VARIABLE, IT IS REQUIRED FOR
+  // USING "LOAD MORE" BUTTON ON THE SEARCH RESULTS PAGE
+  endpoint = '/search/multi';
   searchQuery = searchFormEl.elements.query.value;
   if (!searchQuery) {
     // EMPTY STRING VALIDATION
@@ -244,7 +247,7 @@ searchFormEl.addEventListener('submit', async e => {
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
-  // I USED HERE THE "ENDPOINT" GLOBAL VARIABLE TO DEFINE WHICH ENDPOINT WE SHOULD CALL FOR GETTING THE DATA FOR RENDERING NEXT PAGE
+  // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
   fetchData(endpoint + `?page=${page}`)
     .then(formatResponseData)
     .then(renderMoviesList);
