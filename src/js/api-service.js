@@ -140,7 +140,9 @@ async function getCardDetailsMarkup(endpoint, id) {
   try {
     const data = await fetchData(`${endpoint}/${id}`)
       .then(formatResponseData)
-      .then(object => movieDetailsModalTemplate(object));
+      .then(formattedTvOrMovieObject =>
+        movieDetailsModalTemplate(formattedTvOrMovieObject)
+      );
     return data;
   } catch (err) {
     console.error(err);
@@ -155,28 +157,28 @@ movieListEl.addEventListener('click', async e => {
 });
 
 async function renderCardDetailsModal(eventData) {
-  // GETTING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE, THE FIELDS IN API RESPONSE DIFFER
+  // CHECKING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE THE FIELDS FROM API RESPONSE DIFFER
   const media_type = eventData.composedPath().find(elem => elem.tagName === 'A')
     .dataset.type;
 
-  // GETTING THE ID OF A CLICKED MOVIE CARD ELEMENT ON THE MOVIE LIST
+  // GETTING THE ID OF A CLICKED TV/MOVIE CARD ELEMENT
   const clickedMovieCardId = eventData
     .composedPath()
     .find(elem => elem.tagName === 'A')
     .getAttribute('href');
 
   if (media_type === 'movie') {
-    // IF THE CLICKED CARD IS A MOVIE, WE CALL get "/MOVIE" ENDPOINT FOR GETTING MOVIE DETAILS
+    // IF THE CLICKED CARD IS A MOVIE, WE WILL CALL get "/MOVIE" ENDPOINT FOR GETTING MOVIE DETAILS
     endpoint = '/movie';
   }
 
   if (media_type === 'tv') {
-    // IF THE CLICKED CARD IS A TV SHOW, WE CALL get "/TV" ENDPOINT FOR GETTING TV SHOW DETAILS
+    // IF THE CLICKED CARD IS A TV SHOW, WE WILL CALL get "/TV" ENDPOINT FOR GETTING TV SHOW DETAILS
     endpoint = '/tv';
   }
 
   const movieDetailsMarkup = await getCardDetailsMarkup(
-    endpoint,
+    endpoint, // HERE IS WHERE THE get "/MOVIE" OR get "/TV" ENDPOINT IS PASSED
     clickedMovieCardId
   );
 
@@ -188,7 +190,7 @@ async function renderCardDetailsModal(eventData) {
   modalBackdropEl.addEventListener('click', e => {
     e.preventDefault();
 
-    // REMOVES MODAL ELEMENT FROM DOM WHEN CLICKED ON THE CLOSE ICON OR OUTSIDE OF MODAL ELEMENT
+    // REMOVES THE MODAL FROM THE DOM WHEN CLICKED ON THE CLOSE ICON OR OUTSIDE OF MODAL ELEMENT
     if (
       e.target.className === 'modal-backdrop' ||
       e.composedPath().find(elem => elem.className === 'modal-btn-close')
@@ -196,7 +198,7 @@ async function renderCardDetailsModal(eventData) {
       modalBackdropEl.remove();
       document.body.style.overflowY = '';
 
-      // SETTING ENDPOINT VALUE BASED ON THE PAGE FROM WHICH THE POPUP HAS BEEN OPENED.
+      // SETTING ENDPOINT VALUE DEPENDING ON THE PAGE FROM WHICH THE POPUP WAS OPENED.
       if (currentPage === 'searchResults') {
         endpoint = '/search/multi';
       }
@@ -212,13 +214,10 @@ async function getSearchResults(searchQuery) {
 }
 
 searchFormEl.addEventListener('submit', async e => {
-  // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
-  // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
   e.preventDefault();
 
-  // UPDATING THE ENDPOINT GLOBAL VARIABLE, IT IS REQUIRED FOR
-  // USING "LOAD MORE" BUTTON ON THE SEARCH RESULTS PAGE
-  endpoint = '/search/multi';
+  // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
+  // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
   searchQuery = searchFormEl.elements.query.value;
   if (!searchQuery) {
     // EMPTY STRING VALIDATION
@@ -245,7 +244,7 @@ searchFormEl.addEventListener('submit', async e => {
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
-  // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
+  // I USED HERE THE "ENDPOINT" GLOBAL VARIABLE TO DEFINE WHICH ENDPOINT WE SHOULD CALL FOR GETTING THE DATA FOR RENDERING NEXT PAGE
   fetchData(endpoint + `?page=${page}`)
     .then(formatResponseData)
     .then(renderMoviesList);
