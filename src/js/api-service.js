@@ -26,7 +26,6 @@ export async function fetchData(endpoint) {
         query: searchQuery,
       },
     });
-    console.log(data);
     return data;
   } catch (err) {
     console.error(err);
