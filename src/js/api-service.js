@@ -14,10 +14,20 @@ const pageHeadingText = document.querySelector('.page-heading');
 let genresDictionary = {};
 let modalBackdropEl;
 let searchQuery;
-let endpoint;
 let page = 1;
 
-let currentPage = 'trending'; // POSSIBLE VALUES ARE "searchResults" or "trending"
+export let endpoint = '/trending/all/week';
+
+let currentPage; // POSSIBLE VALUES ARE "searchResults" or "trending"
+
+function getCurrentPage() {
+  if (endpoint === '/trending/all/week') {
+    currentPage = 'trending';
+  }
+  if (endpoint === '/search/multi') {
+    currentPage = 'searchResults';
+  }
+}
 
 export async function fetchData(endpoint) {
   try {
@@ -140,6 +150,7 @@ async function getCardDetailsMarkup(endpoint, id) {
 // OPENS A TV / MOVIE DETAILS MODAL WINDOW
 movieListEl.addEventListener('click', async e => {
   e.preventDefault();
+  getCurrentPage();
   renderCardDetailsModal(e);
 });
 
@@ -184,10 +195,14 @@ async function renderCardDetailsModal(eventData) {
     ) {
       modalBackdropEl.remove();
       document.body.style.overflowY = '';
-      if ((currentPage = 'searchResults')) {
+
+      // SETTING ENDPOINT VALUE BASED ON THE PAGE FROM WHICH THE POPUP HAS BEEN OPENED.
+      if (currentPage === 'searchResults') {
         endpoint = '/search/multi';
       }
-      if ((currentPage = 'trending')) endpoint = '/trending/all/week';
+      if (currentPage === 'trending') {
+        endpoint = '/trending/all/week';
+      }
     }
   });
 }
@@ -213,7 +228,6 @@ searchFormEl.addEventListener('submit', async e => {
   }
   getSearchResults(searchQuery)
     .then(data => {
-      currentPage = 'searchResults';
       movieListEl.innerHTML = '';
       if (data.results.length === 0) {
         pageHeadingText.textContent = `${data.total_results} matches found`;

@@ -1,3 +1,8 @@
-import { fetchData, formatResponseData, renderMoviesList } from './api-service';
+import {
+  fetchData,
+  formatResponseData,
+  renderMoviesList,
+  endpoint,
+} from './api-service';
 
-fetchData('/trending/all/week').then(formatResponseData).then(renderMoviesList);
+fetchData(endpoint).then(formatResponseData).then(renderMoviesList);
