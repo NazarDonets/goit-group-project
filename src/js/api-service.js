@@ -13,7 +13,7 @@ const pageHeadingText = document.querySelector('.page-heading');
 
 let genresDictionary = {};
 let page = 1;
-let query;
+let searchQuery;
 let modalBackdropEl;
 
 export let endpoint = '/trending/all/week';
@@ -23,7 +23,7 @@ export async function fetchData(endpoint) {
     const { data } = await axios.get(BASE_URL + endpoint, {
       params: {
         api_key: API_KEY,
-        query: query,
+        query: searchQuery,
       },
     });
     console.log(data);
@@ -35,6 +35,7 @@ export async function fetchData(endpoint) {
 
 async function composeGenresDictionary() {
   if (Object.entries(genresDictionary).length !== 0) {
+    // IF GENRES DICTIONARY IS ALREADY AVAILABLE, HERE WE AVOID CALLING THE API
     return genresDictionary;
   }
 
@@ -48,47 +49,49 @@ async function composeGenresDictionary() {
 
 export async function formatResponseData(data) {
   genresDictionary = await composeGenresDictionary();
-  let processedObject;
+  let formattedApiResponse;
   try {
     if (data.results) {
-      processedObject = await data.results.map(elem => {
-        return {
-          id: elem.id,
-          media_type: elem.media_type,
-          title: elem.title ? elem.title : elem.name,
-          release_date:
-            elem.release_date || elem.first_air_date
-              ? new Date(
-                  elem.release_date ? elem.release_date : elem.first_air_date
-                ).getFullYear()
-              : 'No data available',
-          poster:
-            elem.poster_path !== null
-              ? IMG_URL + elem.poster_path
-              : 'https://d32qys9a6wm9no.cloudfront.net/images/movies/poster/original.png',
-          overview: elem.overview,
-          genres:
-            elem.genre_ids.length !== 0
-              ? elem.genre_ids
-                  .map((elem, index) => {
-                    if (index < 2) {
-                      return genresDictionary[elem].name;
-                    }
-                    if (index === 2) {
-                      return 'Other';
-                    }
-                    if (index > 2) {
-                      return '';
-                    }
-                  })
-                  .filter(elem => elem != '')
-                  .join(', ')
-              : 'No data available',
-        };
+      formattedApiResponse = await data.results.map(elem => {
+        if (elem.media_type !== 'person') {
+          return {
+            id: elem.id,
+            media_type: elem.media_type,
+            title: elem.title ? elem.title : elem.name,
+            release_date:
+              elem.release_date || elem.first_air_date
+                ? new Date(
+                    elem.release_date ? elem.release_date : elem.first_air_date
+                  ).getFullYear()
+                : 'No data available',
+            poster:
+              elem.poster_path !== null
+                ? IMG_URL + elem.poster_path
+                : 'https://d32qys9a6wm9no.cloudfront.net/images/movies/poster/original.png',
+            overview: elem?.overview,
+            genres:
+              elem.genre_ids.length !== 0
+                ? elem.genre_ids
+                    .map((elem, index) => {
+                      if (index < 2) {
+                        return genresDictionary[elem].name;
+                      }
+                      if (index === 2) {
+                        return 'Other';
+                      }
+                      if (index > 2) {
+                        return '';
+                      }
+                    })
+                    .filter(elem => elem != '')
+                    .join(', ')
+                : 'No data available',
+          };
+        }
       });
     }
-    if (!data.results) {
-      processedObject = {
+    if (!data.results && data.media_type !== 'person') {
+      formattedApiResponse = {
         id: data.id,
         media_type: data.media_type,
         title: data.title ? data.title : data.name,
@@ -104,16 +107,21 @@ export async function formatResponseData(data) {
         rating: data.vote_average.toFixed(1),
         votes: data.vote_count,
         popularity: data.popularity.toFixed(1),
-        original_title: data.original_title,
+        original_title: data.original_title
+          ? data.original_title
+          : data.original_name,
       };
     }
-    return processedObject;
+    if (Array.isArray(formattedApiResponse)) {
+      return formattedApiResponse.filter(elem => elem !== undefined); // REMOVES ALL UNDEFINED OBJECTS FROM THE ARRAY
+    }
+    return formattedApiResponse;
   } catch (err) {
     console.error(err);
   }
 }
 
-export function renderUI(data) {
+export function renderMoviesList(data) {
   movieListEl.innerHTML += data.map(elem => movieCardTemplate(elem)).join('');
 }
 
@@ -128,31 +136,28 @@ async function getCardDetailsMarkup(endpoint, id) {
   }
 }
 
+// OPENS A TV / MOVIE DETAILS MODAL WINDOW
 movieListEl.addEventListener('click', async e => {
   e.preventDefault();
-  renderMovieDetailsModal(e);
+  renderCardDetailsModal(e);
 });
 
-async function renderMovieDetailsModal(eventData) {
-  let modalEl;
-  let endpoint;
-  const media_type = eventData.composedPath().find(elem => elem.tagName === 'A')
+async function renderCardDetailsModal(eventData) {
+  const media_type = eventData.composedPath().find(elem => elem.tagName === 'A') // GETTING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE, THE FIELDS IN API RESPONSE DIFFER
     .dataset.type;
-  const clickedMovieCardId = eventData
+  const clickedMovieCardId = eventData // GETTING THE ID OF A CLICKED MOVIE CARD ELEMENT ON THE MOVIE LIST
     .composedPath()
     .find(elem => elem.tagName === 'A')
     .getAttribute('href');
 
   if (media_type === 'movie') {
+    // IF THE CLICKED CARD IS A MOVIE, WE CALL get "/MOVIE" ENDPOINT FOR GETTING MOVIE DETAILS
     endpoint = '/movie';
   }
 
   if (media_type === 'tv') {
+    // IF THE CLICKED CARD IS A TV SHOW, WE CALL get "/TV" ENDPOINT FOR GETTING TV SHOW DETAILS
     endpoint = '/tv';
-  }
-
-  if (!media_type) {
-    endpoint = '/movie'; // This is for being able to click on the card on the search results page and render the modal with content
   }
 
   const movieDetailsMarkup = await getCardDetailsMarkup(
@@ -160,91 +165,96 @@ async function renderMovieDetailsModal(eventData) {
     clickedMovieCardId
   );
 
-  if (document.querySelector('.modal-backdrop')) {
-    modalEl = document.querySelector('.modal');
-    return (modalEl.innerHTML = await movieDetailsMarkup);
-  }
+  modalBackdropEl = document.createElement('div');
+  modalBackdropEl.classList.add('modal-backdrop');
+  modalBackdropEl.innerHTML = movieDetailsMarkup;
+  document.body.prepend(modalBackdropEl);
+  document.body.style.overflowY = 'hidden';
+  modalBackdropEl.addEventListener('click', e => {
+    e.preventDefault();
 
-  if (!document.querySelector('.modal-backdrop')) {
-    modalBackdropEl = document.createElement('div');
-    modalBackdropEl.classList.add('modal-backdrop');
-    modalBackdropEl.innerHTML = movieDetailsMarkup;
-    document.body.prepend(modalBackdropEl);
-    document.body.style.overflowY = 'hidden';
-    modalBackdropEl.addEventListener('click', e => {
-      e.preventDefault();
-
-      // Deletes modal from DOM if clicked outside of modal window
-      if (
-        e.target.className === 'modal-backdrop' ||
-        e.composedPath().find(elem => elem.className === 'modal-btn-close')
-      ) {
-        modalBackdropEl.remove();
-        document.body.style.overflowY = '';
-      }
-    });
-  }
+    // REMOVES MODAL ELEMENT FROM DOM WHEN CLICKED ON THE CLOSE ICON OR OUTSIDE OF MODAL ELEMENT
+    if (
+      e.target.className === 'modal-backdrop' ||
+      e.composedPath().find(elem => elem.className === 'modal-btn-close')
+    ) {
+      modalBackdropEl.remove();
+      document.body.style.overflowY = '';
+    }
+  });
 }
 
-// ADD TO WATCHED OR QUEUE LISTS
-
-const dataModel = {
-  addedToWatched: [],
-
-  addToWatched(selectedMovie) {
-    if (this.addedToWatched.find(elem => elem.id === selectedMovie.id)) {
-      return;
-    } else {
-      this.addedToWatched.push(selectedMovie);
-      localStorage.setItem(
-        'addedToWatched',
-        JSON.stringify(this.addedToWatched)
-      );
-      // console.log(this.addedToWatched);
-    }
-  },
-  removeFromWatched(selectedMovie) {
-    if (this.addedToWatched.find(elem => elem.id === selectedMovie.id)) {
-      this.addedToWatched.splice(
-        this.addedToWatched.findIndex(elem => elem.id === selectedMovie.id),
-        1
-      );
-      localStorage.setItem(
-        'addedToWatched',
-        JSON.stringify(this.addedToWatched)
-      );
-    } else {
-      return;
-    }
-    // console.log(this.addedToWatched);
-  },
-};
-
-async function getSearchResults(query) {
-  endpoint = '/search/movie';
-  const data = await fetchData(`${endpoint}?query=${query}`);
-  if (data.results.length === 0) {
-    pageHeadingText.textContent = `${data.total_results} matches found`;
-    headerErrorText.textContent = `No results found matching ${query} query`;
-    headerErrorText.classList.remove('visually-hidden');
-  }
-  if (data.results.length !== 0) {
-    pageHeadingText.textContent = `${data.total_results} matches found`;
-    headerErrorText.classList.add('visually-hidden');
-  }
-  return data;
+async function getSearchResults(searchQuery) {
+  // RETURNS RESPONSE FROM API AFTER THE SEARCH QUERY IS SUBMITTED
+  endpoint = '/search/multi';
+  return await fetchData(`${endpoint}?query=${searchQuery}`);
 }
 
 searchFormEl.addEventListener('submit', async e => {
+  // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
+  // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
   e.preventDefault();
+  searchQuery = searchFormEl.elements.query.value;
+  if (!searchQuery) {
+    headerErrorText.textContent = `Please enter search query`;
+    headerErrorText.classList.remove('visually-hidden');
+    return;
+  }
   movieListEl.innerHTML = '';
-  query = searchFormEl.elements.query.value;
-  getSearchResults(query).then(formatResponseData).then(renderUI);
+  getSearchResults(searchQuery)
+    .then(data => {
+      if (data.results.length === 0) {
+        pageHeadingText.textContent = `${data.total_results} matches found`;
+        headerErrorText.textContent = `No results found matching ${searchQuery} query`;
+        headerErrorText.classList.remove('visually-hidden');
+      }
+      if (data.results.length !== 0) {
+        pageHeadingText.textContent = `${data.total_results} matches found`;
+        headerErrorText.classList.add('visually-hidden');
+      }
+      return formatResponseData(data);
+    })
+    .then(renderMoviesList);
 });
 
 loadMoreBtn.addEventListener('click', () => {
   page += 1;
+  searchQuery;
   fetchData(endpoint + `?page=${page}`)
     .then(formatResponseData)
-    .then(renderUI);
+    .then(renderMoviesList);
 });
+
+// WORK IN PROGRESS: ADD TO WATCHED OR QUEUE LISTS
+
+// const dataModel = {
+//   addedToWatched: [],
+
+//   addToWatched(selectedMovie) {
+//     if (this.addedToWatched.find(elem => elem.id === selectedMovie.id)) {
+//       return;
+//     } else {
+//       this.addedToWatched.push(selectedMovie);
+//       localStorage.setItem(
+//         'addedToWatched',
+//         JSON.stringify(this.addedToWatched)
+//       );
+//       // console.log(this.addedToWatched);
+//     }
+//   },
+//   removeFromWatched(selectedMovie) {
+//     if (this.addedToWatched.find(elem => elem.id === selectedMovie.id)) {
+//       this.addedToWatched.splice(
+//         this.addedToWatched.findIndex(elem => elem.id === selectedMovie.id),
+//         1
+//       );
+//       localStorage.setItem(
+//         'addedToWatched',
+//         JSON.stringify(this.addedToWatched)
+//       );
+//     } else {
+//       return;
+//     }
+//     // console.log(this.addedToWatched);
+//   },
+// };

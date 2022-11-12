@@ -4,8 +4,8 @@
   padding-top: 30px;
   padding-bottom: 30px;
   background-color: $color-light-gray;
+  flex-shrink: 0;
 }
-
 .footer-text {
   text-align: center;
   color: #545454;

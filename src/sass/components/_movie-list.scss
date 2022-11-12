@@ -91,11 +91,19 @@
 
 .js-load-more {
   border: none;
+  border-radius: 5px;
   background-color: $color-accent-orange;
-  color: black;
-  padding: 6px 10px;
+  color: white;
+  padding: 12px 20px;
   display: flex;
   margin: 40px auto 40px auto;
   align-items: center;
+  font-family: $main-font;
+  font-size: 16px;
   cursor: pointer;
+  transition: $animate-transition;
+
+  &:hover {
+    background-color: $color-accent-red;
+  }
 }

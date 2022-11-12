@@ -1,3 +1,3 @@
-import { fetchData, formatResponseData, renderUI } from './api-service';
+import { fetchData, formatResponseData, renderMoviesList } from './api-service';
 
-fetchData('/trending/all/week').then(formatResponseData).then(renderUI);
+fetchData('/trending/all/week').then(formatResponseData).then(renderMoviesList);
