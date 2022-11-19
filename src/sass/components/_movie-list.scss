@@ -20,6 +20,7 @@
 }
 
 .movie-item {
+  position: relative;
   max-width: 100%;
   height: auto;
 
@@ -30,10 +31,6 @@
   @include desktop {
     width: calc((1216 - 32) / 3);
   }
-}
-
-.movie-link {
-  position: relative;
 }
 
 .movie-link {
