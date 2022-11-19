@@ -329,7 +329,8 @@ searchFormEl.addEventListener('submit', async e => {
       }
       return formatResponseData(data);
     })
-    .then(renderMoviesList);
+    .then(renderMoviesList)
+    .then(updateMovieItemStatus);
 });
 
 // LOAD MORE BUTTON
