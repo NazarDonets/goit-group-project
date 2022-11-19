@@ -170,7 +170,14 @@
   transition: $animate-transition;
 
   &:hover,
-  &:focus {
+  &:focus,
+  &:active {
+    background-color: $color-accent-orange;
+    border-color: $color-accent-orange;
+    color: white;
+  }
+
+  &__active {
     background-color: $color-accent-orange;
     border-color: $color-accent-orange;
     color: white;

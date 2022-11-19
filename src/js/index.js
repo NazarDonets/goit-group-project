@@ -3,6 +3,10 @@ import {
   formatResponseData,
   renderMoviesList,
   endpoint,
+  updateMovieItemStatus,
 } from './api-service';
 
-fetchData(endpoint).then(formatResponseData).then(renderMoviesList);
+fetchData(endpoint)
+  .then(formatResponseData)
+  .then(renderMoviesList)
+  .then(updateMovieItemStatus);

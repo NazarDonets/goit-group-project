@@ -1,6 +1,12 @@
 <li class='movie-item'>
   <a href='{{id}}' data-type='{{media_type}}' class='movie-link'>
-    <img src='{{poster}}' alt='{{overview}}' class='movie-image' />
+    <img
+      src='{{poster}}'
+      alt='{{overview}}'
+      class='movie-image'
+      loading='lazy'
+    />
+    <p class='movie-status movie-status__hidden'></p>
     <div class='movie-info'>
       <p class='movie-title'>{{title}}</p>
       <p class='movie-description'>{{genres}} | {{release_date}}</p>
