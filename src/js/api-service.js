@@ -141,6 +141,7 @@ export function updateMovieItemStatus() {
   visibleMovies.forEach(elem => {
     let movieItemId = Number(elem.querySelector('a').getAttribute('href'));
     let movieItemStatus = elem.querySelector('.movie-status');
+    movieItemStatus.classList.add('movie-status__hidden');
     if (
       localStorageData.checkIfMovieIsInLocalStorageWatchedList({
         id: movieItemId,
