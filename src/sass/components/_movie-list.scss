@@ -1,7 +1,8 @@
 @use './../utilities/variables' as *;
 @use './../utilities/mixins' as *;
 
-.movie-list {
+.movie-list,
+.movie-list__library {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;

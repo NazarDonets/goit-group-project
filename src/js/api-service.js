@@ -105,6 +105,12 @@ export async function formatResponseData(data) {
       formattedApiResponse = {
         id: data.id,
         title: data.title ? data.title : data.name,
+        release_date:
+          data.release_date || data.first_air_date
+            ? new Date(
+                data.release_date ? data.release_date : data.first_air_date
+              ).getFullYear()
+            : 'No data available',
         poster:
           data.poster_path !== null
             ? IMG_URL + data.poster_path
@@ -302,39 +308,6 @@ async function getSearchResults(searchQuery) {
   return await fetchData(`${endpoint}?query=${searchQuery}`);
 }
 
-searchFormEl.addEventListener('submit', async e => {
-  // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
-  // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
-  e.preventDefault();
-
-  // UPDATING THE ENDPOINT GLOBAL VARIABLE, IT IS REQUIRED FOR
-  // USING "LOAD MORE" BUTTON ON THE SEARCH RESULTS PAGE
-  endpoint = '/search/multi';
-  searchQuery = searchFormEl.elements.query.value;
-  if (!searchQuery) {
-    // EMPTY STRING VALIDATION
-    headerErrorText.textContent = `Please enter search query`;
-    headerErrorText.classList.remove('visually-hidden');
-    return;
-  }
-  getSearchResults(searchQuery)
-    .then(data => {
-      movieListEl.innerHTML = '';
-      if (data.results.length === 0) {
-        pageHeadingText.textContent = `${data.total_results} matches found`;
-        headerErrorText.textContent = `No results found matching ${searchQuery} query`;
-        headerErrorText.classList.remove('visually-hidden');
-      }
-      if (data.results.length !== 0) {
-        pageHeadingText.textContent = `${data.total_results} matches found`;
-        headerErrorText.classList.add('visually-hidden');
-      }
-      return formatResponseData(data);
-    })
-    .then(renderMoviesList)
-    .then(updateMovieItemStatus);
-});
-
 // LOAD MORE BUTTON
 if (!window.location.href.includes('library')) {
   loadMoreBtn.addEventListener('click', () => {
@@ -342,6 +315,39 @@ if (!window.location.href.includes('library')) {
     // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
     fetchData(endpoint + `?page=${page}`)
       .then(formatResponseData)
+      .then(renderMoviesList)
+      .then(updateMovieItemStatus);
+  });
+
+  searchFormEl.addEventListener('submit', async e => {
+    // RENDERS THE MOVIE LIST AND UPDATES UI WITH DIFFERENT ERROR TEXT STATES
+    // DEPENDING ON THE SEARCH RESULTS AFTER SEARCH QUERY IS SUBMITTED
+    e.preventDefault();
+
+    // UPDATING THE ENDPOINT GLOBAL VARIABLE, IT IS REQUIRED FOR
+    // USING "LOAD MORE" BUTTON ON THE SEARCH RESULTS PAGE
+    endpoint = '/search/multi';
+    searchQuery = searchFormEl.elements.query.value;
+    if (!searchQuery) {
+      // EMPTY STRING VALIDATION
+      headerErrorText.textContent = `Please enter search query`;
+      headerErrorText.classList.remove('visually-hidden');
+      return;
+    }
+    getSearchResults(searchQuery)
+      .then(data => {
+        movieListEl.innerHTML = '';
+        if (data.results.length === 0) {
+          pageHeadingText.textContent = `${data.total_results} matches found`;
+          headerErrorText.textContent = `No results found matching ${searchQuery} query`;
+          headerErrorText.classList.remove('visually-hidden');
+        }
+        if (data.results.length !== 0) {
+          pageHeadingText.textContent = `${data.total_results} matches found`;
+          headerErrorText.classList.add('visually-hidden');
+        }
+        return formatResponseData(data);
+      })
       .then(renderMoviesList)
       .then(updateMovieItemStatus);
   });

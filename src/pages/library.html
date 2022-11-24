@@ -34,22 +34,12 @@
             </li>
           </ul>
         </nav>
-        <form class="search-form">
-          <input
-            type="text"
-            class="search-input"
-            name="query"
-            placeholder="Movie search"
-          />
-          <button type="submit" name="submit" class="search-submit">
-            <svg class="search-form__submit-icon">
-              <use href="./../icons/icons.svg#icon-search"></use>
-            </svg>
+        <div class="header-buttons">
+          <button class="header-button header-button__active" data-watched>
+            Watched
           </button>
-        </form>
-        <p class="header-error">
-          Search result not successful. Enter the correct movie name and
-        </p>
+          <button class="header-button" data-queue>Queue</button>
+        </div>
       </div>
     </header>
     <main>
