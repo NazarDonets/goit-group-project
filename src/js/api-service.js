@@ -176,11 +176,13 @@ async function getCardDetailsMarkup(endpoint, id) {
 }
 
 // OPENS A TV / MOVIE DETAILS MODAL WINDOW
-movieListEl.addEventListener('click', async e => {
-  e.preventDefault();
-  getCurrentRoute();
-  renderCardDetailsModal(e);
-});
+if (!window.location.href.includes('library')) {
+  movieListEl.addEventListener('click', async e => {
+    e.preventDefault();
+    getCurrentRoute();
+    renderCardDetailsModal(e);
+  });
+}
 
 async function renderCardDetailsModal(eventData) {
   // CHECKING THE TYPE OF SELECTED MEDIA - TV OR MOVIE, AS DEPENDING ON THE TYPE THE FIELDS FROM API RESPONSE DIFFER
@@ -334,15 +336,16 @@ searchFormEl.addEventListener('submit', async e => {
 });
 
 // LOAD MORE BUTTON
-loadMoreBtn.addEventListener('click', () => {
-  page += 1;
-  // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
-  fetchData(endpoint + `?page=${page}`)
-    .then(formatResponseData)
-    .then(renderMoviesList)
-    .then(updateMovieItemStatus);
-});
-
+if (!window.location.href.includes('library')) {
+  loadMoreBtn.addEventListener('click', () => {
+    page += 1;
+    // HERE WE USE "ENDPOINT" GLOBAL VARIABLE TO DEFINE FROM WHICH ENDPOINT WE SHOULD REQUEST DATA FOR NEXT PAGE
+    fetchData(endpoint + `?page=${page}`)
+      .then(formatResponseData)
+      .then(renderMoviesList)
+      .then(updateMovieItemStatus);
+  });
+}
 // LOCAL STORAGE HANDLING - ADD TO WATCHED OR QUEUE LISTS
 
 class LocalStorageData {
@@ -453,7 +456,7 @@ class LocalStorageData {
   }
 }
 
-const localStorageData = new LocalStorageData();
+export const localStorageData = new LocalStorageData();
 localStorageData.loadDataFromLocalStorage();
 
 // localStorageData.addToQueuedList({ id: 1, name: 'test1' });
